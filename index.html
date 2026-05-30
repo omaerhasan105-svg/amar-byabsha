@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>আমার ব্যবসা — ড্যাশবোর্ড</title>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green-dark: #1a4731;
+      --green-mid: #2d7a52;
+      --green-light: #eaf3de;
+      --green-text: #3b6d11;
+      --red-bg: #fcebeb;
+      --red-text: #a32d2d;
+      --amber-bg: #faeeda;
+      --amber-text: #633806;
+      --blue-bg: #e6f1fb;
+      --blue-text: #185fa5;
+      --radius: 10px;
+      --border: 0.5px solid #e0e0e0;
+    }
+    body { font-family: 'Hind Siliguri', sans-serif; background: #f5f6f8; color: #1a1a1a; font-size: 14px; }
+    .app { display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* HEADER */
+    .header { background: var(--green-dark); color: #fff; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .logo { display: flex; align-items: center; gap: 10px; }
+    .logo-icon { width: 38px; height: 38px; background: var(--green-mid); border-radius: 9px; display: flex; align-items: center; justify-content: center; }
+    .logo-title { font-size: 17px; font-weight: 600; }
+    .logo-sub { font-size: 11px; opacity: 0.7; }
+    .header-right { font-size: 12px; opacity: 0.8; text-align: right; line-height: 1.6; }
+
+    /* NAV */
+    .nav { background: #fff; border-bottom: var(--border); display: flex; gap: 2px; padding: 0 20px; overflow-x: auto; }
+    .nav-btn { padding: 11px 14px; font-size: 13px; font-weight: 500; border: none; background: none; cursor: pointer; color: #666; border-bottom: 2px solid transparent; white-space: nowrap; font-family: inherit; display: flex; align-items: center; gap: 5px; transition: color 0.15s; }
+    .nav-btn.active { color: var(--green-dark); border-bottom-color: var(--green-dark); }
+    .nav-btn:hover:not(.active) { color: #333; }
+
+    /* CONTENT */
+    .content { padding: 18px 20px; flex: 1; max-width: 1100px; margin: 0 auto; width: 100%; }
+
+    /* METRIC CARDS */
+    .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 16px; }
+    .metric-card { background: #fff; border: var(--border); border-radius: var(--radius); padding: 14px; }
+    .metric-label { font-size: 11px; color: #777; margin-bottom: 6px; display: flex; align-items: center; gap: 4px; }
+    .metric-value { font-size: 21px; font-weight: 600; color: #1a1a1a; }
+    .metric-badge { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 5px; font-weight: 500; margin-top: 5px; }
+    .badge-green { background: var(--green-light); color: var(--green-text); }
+    .badge-red { background: var(--red-bg); color: var(--red-text); }
+    .badge-amber { background: var(--amber-bg); color: var(--amber-text); }
+    .badge-blue { background: var(--blue-bg); color: var(--blue-text); }
+
+    /* SECTIONS */
+    .section { background: #fff; border: var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 12px; }
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .section-title { font-size: 13px; font-weight: 600; color: #333; display: flex; align-items: center; gap: 6px; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .chart-wrap { position: relative; width: 100%; height: 200px; }
+
+    /* TABLE */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 7px 10px; font-size: 11px; color: #888; font-weight: 600; border-bottom: var(--border); white-space: nowrap; }
+    td { padding: 9px 10px; border-bottom: var(--border); color: #222; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafafa; }
+
+    /* STATUS PILLS */
+    .pill { font-size: 11px; padding: 2px 9px; border-radius: 10px; font-weight: 500; white-space: nowrap; }
+    .pill-green { background: var(--green-light); color: var(--green-text); }
+    .pill-amber { background: var(--amber-bg); color: var(--amber-text); }
+    .pill-red { background: var(--red-bg); color: var(--red-text); }
+    .pill-blue { background: var(--blue-bg); color: var(--blue-text); }
+
+    /* BUTTONS */
+    .btn { padding: 7px 14px; border-radius: 7px; border: var(--border); background: #fff; color: #333; font-size: 12px; cursor: pointer; font-family: inherit; font-weight: 500; display: inline-flex; align-items: center; gap: 5px; transition: background 0.1s; }
+    .btn:hover { background: #f3f4f6; }
+    .btn-primary { background: var(--green-dark); color: #fff; border-color: var(--green-dark); }
+    .btn-primary:hover { background: var(--green-mid); }
+    .btn-danger { background: var(--red-bg); color: var(--red-text); border-color: #f0c0c0; }
+    .btn-sm { padding: 4px 10px; font-size: 11px; }
+
+    /* ALERT */
+    .alert { padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .alert-warn { background: var(--amber-bg); color: var(--amber-text); border: 0.5px solid #ef9f27; }
+    .alert-info { background: var(--blue-bg); color: var(--blue-text); border: 0.5px solid #85b7eb; }
+
+    /* FORMS */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .form-row-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-label { font-size: 12px; color: #666; font-weight: 500; }
+    input[type="text"], input[type="number"], input[type="tel"], input[type="email"], select, textarea {
+      padding: 8px 10px; border: var(--border); border-radius: 7px; font-size: 13px;
+      font-family: inherit; color: #222; background: #fff; outline: none; width: 100%;
+    }
+    input:focus, select:focus { border-color: var(--green-mid); box-shadow: 0 0 0 2px rgba(45,122,82,0.12); }
+
+    /* MODAL */
+    .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; align-items: center; justify-content: center; padding: 16px; }
+    .modal-backdrop.open { display: flex; }
+    .modal { background: #fff; border-radius: 12px; padding: 20px; width: 400px; max-width: 100%; max-height: 90vh; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .modal-title { font-size: 15px; font-weight: 600; }
+    .modal-close { border: none; background: none; cursor: pointer; font-size: 20px; color: #999; line-height: 1; }
+    .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+
+    /* TABS */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* PROGRESS */
+    .progress-wrap { background: #f0f0f0; border-radius: 4px; height: 6px; margin-top: 5px; }
+    .progress-bar { height: 6px; border-radius: 4px; background: var(--green-dark); }
+
+    /* LOADING */
+    .loading { text-align: center; padding: 30px; color: #999; }
+    .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid #e0e0e0; border-top-color: var(--green-dark); border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* SETUP SCREEN */
+    .setup-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f5f6f8; }
+    .setup-card { background: #fff; border-radius: 14px; padding: 32px; width: 420px; max-width: 95vw; border: var(--border); text-align: center; }
+    .setup-icon { font-size: 40px; margin-bottom: 12px; color: var(--green-dark); }
+    .setup-title { font-size: 20px; font-weight: 600; margin-bottom: 6px; }
+    .setup-sub { font-size: 13px; color: #777; margin-bottom: 24px; }
+
+    /* EMPTY STATE */
+    .empty { text-align: center; padding: 32px; color: #aaa; }
+    .empty i { font-size: 36px; margin-bottom: 10px; display: block; }
+
+    /* CONFIG WARNING */
+    .config-banner { background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-size: 13px; color: #856404; }
+
+    @media (max-width: 600px) {
+      .two-col { grid-template-columns: 1fr; }
+      .form-row-3 { grid-template-columns: 1fr 1fr; }
+      .content { padding: 12px 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ======================== SETUP / CONFIG CHECK ======================== -->
+<div id="config-warning" class="config-banner" style="display:none;margin:12px;">
+  ⚠️ <strong>API সংযোগ নেই।</strong> backend/server.js চালু করুন এবং <code>.env</code> ফাইলে Supabase কী যোগ করুন।
+  ডেমো মোডে চলছে।
+</div>
+
+<div class="app" id="main-app">
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo">
+      <div class="logo-icon"><i class="ti ti-building-store" style="font-size:20px;color:#fff"></i></div>
+      <div>
+        <div class="logo-title" id="biz-name">আমার ব্যবসা</div>
+        <div class="logo-sub">ক্ষুদ্র ব্যবসা ম্যানেজার • বাংলাদেশ</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div id="live-date"></div>
+      <div id="conn-status" style="margin-top:2px">
+        <span id="conn-dot" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#4caf50;margin-right:4px"></span>
+        <span id="conn-text">সংযুক্ত</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- NAV -->
+  <nav class="nav" id="main-nav">
+    <button class="nav-btn active" onclick="switchTab('dashboard',this)">
+      <i class="ti ti-layout-dashboard"></i> ড্যাশবোর্ড
+    </button>
+    <button class="nav-btn" onclick="switchTab('sales',this)">
+      <i class="ti ti-receipt"></i> বিক্রয়
+    </button>
+    <button class="nav-btn" onclick="switchTab('inventory',this)">
+      <i class="ti ti-box"></i> ইনভেন্টরি
+    </button>
+    <button class="nav-btn" onclick="switchTab('customers',this)">
+      <i class="ti ti-users"></i> খদ্দের
+    </button>
+    <button class="nav-btn" onclick="switchTab('expense',this)">
+      <i class="ti ti-cash"></i> খরচ
+    </button>
+  </nav>
+
+  <div class="content">
+
+    <!-- ==================== DASHBOARD TAB ==================== -->
+    <div class="tab-content active" id="tab-dashboard">
+      <div class="metric-grid" id="dash-metrics">
+        <div class="metric-card"><div class="metric-label"><i class="ti ti-trending-up" style="color:var(--green-dark)"></i> আজকের বিক্রয়</div><div class="metric-value" id="m-today">...</div></div>
+        <div class="metric-card"><div class="metric-label"><i class="ti ti-wallet" style="color:#185fa5"></i> মাসিক লাভ</div><div class="metric-value" id="m-profit">...</div></div>
+        <div class="metric-card"><div class="metric-label"><i class="ti ti-users" style="color:#ba7517"></i> খদ্দের (মাস)</div><div class="metric-value" id="m-cust">...</div></div>
+        <div class="metric-card"><div class="metric-label"><i class="ti ti-package" style="color:var(--red-text)"></i> কম স্টক পণ্য</div><div class="metric-value" id="m-lowstock" style="color:var(--red-text)">...</div></div>
+      </div>
+
+      <div id="low-stock-alert" style="display:none"></div>
+
+      <div class="two-col">
+        <div class="section">
+          <div class="section-header"><span class="section-title"><i class="ti ti-chart-bar"></i> সাপ্তাহিক বিক্রয়</span></div>
+          <div class="chart-wrap"><canvas id="weekChart" role="img" aria-label="সাপ্তাহিক বিক্রয় চার্ট"></canvas></div>
+        </div>
+        <div class="section">
+          <div class="section-header"><span class="section-title"><i class="ti ti-chart-pie"></i> খরচ বিভাজন</span></div>
+          <div class="chart-wrap"><canvas id="expChart" role="img" aria-label="খরচ বিভাজন চার্ট"></canvas></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-header"><span class="section-title"><i class="ti ti-clock"></i> সাম্প্রতিক বিক্রয়</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>খদ্দের</th><th>পণ্য</th><th>মোট</th><th>অবস্থা</th><th>সময়</th></tr></thead>
+            <tbody id="dash-recent"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SALES TAB ==================== -->
+    <div class="tab-content" id="tab-sales">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="font-size:15px;font-weight:600">বিক্রয় রেকর্ড</div>
+        <button class="btn btn-primary" onclick="openModal('sale-modal')"><i class="ti ti-plus"></i> নতুন বিক্রয়</button>
+      </div>
+      <div class="section">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>খদ্দের</th><th>পণ্য</th><th>পরিমাণ</th><th>মোট (৳)</th><th>পদ্ধতি</th><th>তারিখ</th><th>অবস্থা</th></tr></thead>
+            <tbody id="sales-table"><tr><td colspan="8" class="loading"><span class="spinner"></span></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-header"><span class="section-title"><i class="ti ti-chart-line"></i> মাসিক বিক্রয় ট্রেন্ড</span></div>
+        <div class="chart-wrap" style="height:220px"><canvas id="salesTrendChart" role="img" aria-label="মাসিক ট্রেন্ড চার্ট"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ==================== INVENTORY TAB ==================== -->
+    <div class="tab-content" id="tab-inventory">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="font-size:15px;font-weight:600">পণ্য তালিকা</div>
+        <button class="btn btn-primary" onclick="openModal('inv-modal')"><i class="ti ti-plus"></i> নতুন পণ্য</button>
+      </div>
+      <div id="inv-alert" style="display:none"></div>
+      <div class="section">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>কোড</th><th>পণ্যের নাম</th><th>বিভাগ</th><th>স্টক</th><th>ক্রয় মূল্য</th><th>বিক্রয় মূল্য</th><th>লাভ %</th><th>অবস্থা</th><th></th></tr></thead>
+            <tbody id="inventory-table"><tr><td colspan="9" class="loading"><span class="spinner"></span></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== CUSTOMERS TAB ==================== -->
+    <div class="tab-content" id="tab-customers">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="font-size:15px;font-weight:600">খদ্দের ব্যবস্থাপনা</div>
+        <button class="btn btn-primary" onclick="openModal('cust-modal')"><i class="ti ti-plus"></i> নতুন খদ্দের</button>
+      </div>
+      <div class="section">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>নাম</th><th>ফোন</th><th>এলাকা</th><th>মোট কেনাকাটা</th><th>বাকি</th><th>শেষ কেনাকাটা</th><th></th></tr></thead>
+            <tbody id="cust-table"><tr><td colspan="7" class="loading"><span class="spinner"></span></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-header"><span class="section-title"><i class="ti ti-award"></i> সেরা খদ্দের</span></div>
+        <div id="top-customers"></div>
+      </div>
+    </div>
+
+    <!-- ==================== EXPENSE TAB ==================== -->
+    <div class="tab-content" id="tab-expense">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="font-size:15px;font-weight:600">খরচ ট্র্যাকার</div>
+        <button class="btn btn-primary" onclick="openModal('exp-modal')"><i class="ti ti-plus"></i> নতুন খরচ</button>
+      </div>
+      <div class="metric-grid" id="exp-metrics">
+        <div class="metric-card"><div class="metric-label">মোট খরচ (মাস)</div><div class="metric-value" id="exp-total">...</div></div>
+        <div class="metric-card"><div class="metric-label">পণ্য কেনা</div><div class="metric-value" id="exp-cat1">৳ ০</div></div>
+        <div class="metric-card"><div class="metric-label">ভাড়া / বিল</div><div class="metric-value" id="exp-cat2">৳ ০</div></div>
+        <div class="metric-card"><div class="metric-label">অন্যান্য</div><div class="metric-value" id="exp-cat3">৳ ০</div></div>
+      </div>
+      <div class="section">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>তারিখ</th><th>বিভাগ</th><th>বিবরণ</th><th>পরিমাণ (৳)</th><th>পদ্ধতি</th></tr></thead>
+            <tbody id="exp-table"><tr><td colspan="5" class="loading"><span class="spinner"></span></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /app -->
+
+<!-- ======================== MODALS ======================== -->
+
+<!-- Sale Modal -->
+<div class="modal-backdrop" id="sale-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">নতুন বিক্রয় যোগ করুন</div>
+      <button class="modal-close" onclick="closeModal('sale-modal')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">খদ্দেরের নাম *</label><input type="text" id="s-cust" placeholder="নাম লিখুন"></div>
+      <div class="form-group"><label class="form-label">পণ্য *</label>
+        <select id="s-prod" onchange="fillSalePrice()">
+          <option value="">পণ্য বেছে নিন</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">পরিমাণ *</label><input type="number" id="s-qty" value="1" min="1" oninput="calcSaleTotal()"></div>
+      <div class="form-group"><label class="form-label">একক মূল্য (৳) *</label><input type="number" id="s-price" placeholder="০" oninput="calcSaleTotal()"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">মোট (৳)</label><input type="number" id="s-total" placeholder="০" readonly style="background:#f9f9f9"></div>
+      <div class="form-group"><label class="form-label">পেমেন্ট পদ্ধতি</label>
+        <select id="s-pay">
+          <option>নগদ</option><option>বিকাশ</option><option>নগদ (অ্যাপ)</option><option>রকেট</option><option>ব্যাংক</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:10px">
+      <label class="form-label">অবস্থা</label>
+      <select id="s-status"><option>পরিশোধ</option><option>বাকি</option></select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('sale-modal')">বাতিল</button>
+      <button class="btn btn-primary" onclick="addSale()"><i class="ti ti-check"></i> সংরক্ষণ করুন</button>
+    </div>
+  </div>
+</div>
+
+<!-- Inventory Modal -->
+<div class="modal-backdrop" id="inv-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">নতুন পণ্য যোগ করুন</div>
+      <button class="modal-close" onclick="closeModal('inv-modal')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">পণ্যের নাম *</label><input type="text" id="i-name" placeholder="পণ্যের নাম"></div>
+      <div class="form-group"><label class="form-label">বিভাগ</label>
+        <select id="i-cat"><option>পোশাক</option><option>ইলেকট্রনিক্স</option><option>পাদুকা</option><option>আনুষাঙ্গিক</option><option>খাদ্য</option><option>অন্যান্য</option></select>
+      </div>
+    </div>
+    <div class="form-row form-row-3">
+      <div class="form-group"><label class="form-label">স্টক *</label><input type="number" id="i-stock" placeholder="০" min="0"></div>
+      <div class="form-group"><label class="form-label">ক্রয় মূল্য (৳)</label><input type="number" id="i-buy" placeholder="০"></div>
+      <div class="form-group"><label class="form-label">বিক্রয় মূল্য (৳)</label><input type="number" id="i-sell" placeholder="০"></div>
+    </div>
+    <div class="form-group" style="margin-bottom:10px">
+      <label class="form-label">কম স্টক সীমা (এই সংখ্যার নিচে সতর্কতা দেবে)</label>
+      <input type="number" id="i-threshold" placeholder="১০" value="10" min="1">
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('inv-modal')">বাতিল</button>
+      <button class="btn btn-primary" onclick="addInventory()"><i class="ti ti-check"></i> সংরক্ষণ করুন</button>
+    </div>
+  </div>
+</div>
+
+<!-- Customer Modal -->
+<div class="modal-backdrop" id="cust-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">নতুন খদ্দের যোগ করুন</div>
+      <button class="modal-close" onclick="closeModal('cust-modal')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">নাম *</label><input type="text" id="c-name" placeholder="পুরো নাম"></div>
+      <div class="form-group"><label class="form-label">ফোন নম্বর</label><input type="tel" id="c-phone" placeholder="০১৭XX-XXXXXX"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">এলাকা</label><input type="text" id="c-area" placeholder="থানা, জেলা"></div>
+      <div class="form-group"><label class="form-label">বিস্তারিত ঠিকানা</label><input type="text" id="c-addr" placeholder="বাড়ি/রাস্তা নম্বর"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('cust-modal')">বাতিল</button>
+      <button class="btn btn-primary" onclick="addCustomer()"><i class="ti ti-check"></i> সংরক্ষণ করুন</button>
+    </div>
+  </div>
+</div>
+
+<!-- Expense Modal -->
+<div class="modal-backdrop" id="exp-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">নতুন খরচ যোগ করুন</div>
+      <button class="modal-close" onclick="closeModal('exp-modal')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">বিভাগ *</label>
+        <select id="e-cat"><option>পণ্য কেনা</option><option>ভাড়া</option><option>বিদ্যুৎ</option><option>পানি</option><option>পরিবহন</option><option>বেতন</option><option>অন্যান্য</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">পরিমাণ (৳) *</label><input type="number" id="e-amt" placeholder="০.০০"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">বিবরণ</label><input type="text" id="e-desc" placeholder="খরচের বিবরণ"></div>
+      <div class="form-group"><label class="form-label">পেমেন্ট পদ্ধতি</label>
+        <select id="e-pay"><option>নগদ</option><option>বিকাশ</option><option>নগদ (অ্যাপ)</option><option>রকেট</option><option>ব্যাংক</option></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('exp-modal')">বাতিল</button>
+      <button class="btn btn-primary" onclick="addExpense()"><i class="ti ti-check"></i> সংরক্ষণ করুন</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// CONFIG — Change this to your backend URL when deployed
+// ============================================================
+const API = 'http://localhost:3000/api';
+let USE_DEMO = false;
+let weekChartInst, expChartInst, trendChartInst;
+let inventoryCache = [];
+
+// ============================================================
+// UTILITY
+// ============================================================
+const tk = n => '৳ ' + Number(n).toLocaleString('en-IN');
+const fmtDate = d => new Date(d).toLocaleDateString('bn-BD', { day:'numeric', month:'short' });
+const fmtTime = d => new Date(d).toLocaleTimeString('bn-BD', { hour:'2-digit', minute:'2-digit' });
+
+async function apiFetch(path, opts = {}) {
+  try {
+    const r = await fetch(API + path, {
+      headers: { 'Content-Type': 'application/json' },
+      ...opts
+    });
+    if (!r.ok) throw new Error('API error ' + r.status);
+    return await r.json();
+  } catch (e) {
+    USE_DEMO = true;
+    document.getElementById('config-warning').style.display = 'block';
+    document.getElementById('conn-dot').style.background = '#f44336';
+    document.getElementById('conn-text').textContent = 'ডেমো মোড';
+    return null;
+  }
+}
+
+// ============================================================
+// DEMO DATA (shown when API is unavailable)
+// ============================================================
+const DEMO = {
+  dashboard: {
+    todayTotal: 8420, monthProfit: 24600, custCount: 34, lowStockCount: 5,
+    lowStockItems: [
+      {name:'মোবাইল কভার', stock:4}, {name:'হেডফোন', stock:2}, {name:'থ্রি-পিস', stock:6}
+    ],
+    weeklySales: [
+      {date:'শনি',total:6200},{date:'রবি',total:4800},{date:'সোম',total:7100},
+      {date:'মঙ্গল',total:5500},{date:'বুধ',total:8900},{date:'বৃহ',total:6400},{date:'আজ',total:8420}
+    ],
+    expCategories: {'পণ্য কেনা':12000,'ভাড়া':8000,'বিদ্যুৎ':2850,'পরিবহন':1500},
+    recentSales: [
+      {customer_name:'রহিম মিয়া',product_name:'মোবাইল কভার',total:1200,status:'পরিশোধ',sale_date:new Date()},
+      {customer_name:'সাবিনা বেগম',product_name:'শাড়ি',total:3600,status:'বাকি',sale_date:new Date()},
+      {customer_name:'কামাল হোসেন',product_name:'জুতা',total:850,status:'পরিশোধ',sale_date:new Date()}
+    ]
+  },
+  sales: [
+    {id:'1005',customer_name:'রহিম মিয়া',product_name:'মোবাইল কভার',quantity:3,total:1200,payment_method:'নগদ',sale_date:new Date(),status:'পরিশোধ'},
+    {id:'1004',customer_name:'সাবিনা বেগম',product_name:'শাড়ি',quantity:2,total:3600,payment_method:'বিকাশ',sale_date:new Date(),status:'বাকি'},
+    {id:'1003',customer_name:'কামাল হোসেন',product_name:'জুতা',quantity:1,total:850,payment_method:'নগদ',sale_date:new Date(Date.now()-86400000),status:'পরিশোধ'},
+    {id:'1002',customer_name:'রুমি আক্তার',product_name:'থ্রি-পিস',quantity:4,total:5200,payment_method:'রকেট',sale_date:new Date(Date.now()-172800000),status:'বকেয়া'}
+  ],
+  inventory: [
+    {id:'p1',product_code:'P001',name:'মোবাইল কভার',category:'ইলেকট্রনিক্স',stock:4,low_stock_threshold:10,buy_price:250,sell_price:400},
+    {id:'p2',product_code:'P002',name:'শাড়ি (সিল্ক)',category:'পোশাক',stock:32,low_stock_threshold:5,buy_price:800,sell_price:1800},
+    {id:'p3',product_code:'P003',name:'জুতা (পুরুষ)',category:'পাদুকা',stock:18,low_stock_threshold:8,buy_price:400,sell_price:850},
+    {id:'p4',product_code:'P004',name:'থ্রি-পিস',category:'পোশাক',stock:6,low_stock_threshold:10,buy_price:550,sell_price:1300},
+    {id:'p5',product_code:'P005',name:'হেডফোন',category:'ইলেকট্রনিক্স',stock:2,low_stock_threshold:5,buy_price:600,sell_price:1200}
+  ],
+  customers: [
+    {id:'c1',name:'রুমি আক্তার',phone:'০১৯৩৩-৪৫৬৭৮৯',area:'গুলশান, ঢাকা',total_purchase:22000,total_due:5200,created_at:new Date()},
+    {id:'c2',name:'রহিম মিয়া',phone:'০১৭১১-২৩৪৫৬৭',area:'মিরপুর, ঢাকা',total_purchase:15400,total_due:0,created_at:new Date()},
+    {id:'c3',name:'সাবিনা বেগম',phone:'০১৮২২-৩৪৫৬৭৮',area:'মোহাম্মদপুর',total_purchase:9200,total_due:3600,created_at:new Date()},
+    {id:'c4',name:'কামাল হোসেন',phone:'০১৬৪৪-৫৬৭৮৯০',area:'নারায়ণগঞ্জ',total_purchase:4850,total_due:0,created_at:new Date()}
+  ],
+  expenses: [
+    {category:'পণ্য কেনা',description:'পাইকার থেকে কাপড় কেনা',amount:3500,payment_method:'নগদ',expense_date:new Date()},
+    {category:'বিদ্যুৎ',description:'বিদ্যুৎ বিল — মে মাস',amount:450,payment_method:'বিকাশ',expense_date:new Date(Date.now()-86400000)},
+    {category:'ভাড়া',description:'দোকান ভাড়া — মে মাস',amount:8000,payment_method:'নগদ',expense_date:new Date(Date.now()-172800000)},
+    {category:'পরিবহন',description:'মাল পরিবহন',amount:600,payment_method:'নগদ',expense_date:new Date(Date.now()-259200000)}
+  ],
+  monthly: [
+    {month:'জানু',total:42000},{month:'ফেব্রু',total:38000},{month:'মার্চ',total:51000},
+    {month:'এপ্রিল',total:47000},{month:'মে',total:63000},{month:'জুন',total:58000},
+    {month:'জুলাই',total:71000},{month:'আগস্ট',total:66000},{month:'সেপ্টে',total:74000},
+    {month:'অক্টো',total:68000},{month:'নভে',total:79000},{month:'ডিসে',total:85000}
+  ]
+};
+
+// ============================================================
+// DATE
+// ============================================================
+const BN_DAYS = ['রবিবার','সোমবার','মঙ্গলবার','বুধবার','বৃহস্পতিবার','শুক্রবার','শনিবার'];
+const BN_MONTHS = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+const d = new Date();
+document.getElementById('live-date').textContent = `${BN_DAYS[d.getDay()]}, ${d.getDate()} ${BN_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+
+// ============================================================
+// TAB SWITCHING
+// ============================================================
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (name === 'sales') loadSales();
+  if (name === 'inventory') loadInventory();
+  if (name === 'customers') loadCustomers();
+  if (name === 'expense') loadExpenses();
+}
+
+// ============================================================
+// MODALS
+// ============================================================
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-backdrop').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+// ============================================================
+// STATUS PILL
+// ============================================================
+function statusPill(s) {
+  const map = { 'পরিশোধ':'green', 'বাকি':'amber', 'বকেয়া':'red', 'স্বাভাবিক':'green', 'কম স্টক':'red' };
+  return `<span class="pill pill-${map[s]||'blue'}">${s}</span>`;
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+async function loadDashboard() {
+  let data = await apiFetch('/dashboard');
+  if (!data) data = DEMO.dashboard;
+
+  document.getElementById('m-today').textContent = tk(data.todayTotal);
+  document.getElementById('m-profit').textContent = tk(data.monthProfit);
+  document.getElementById('m-cust').textContent = data.custCount;
+  document.getElementById('m-lowstock').textContent = data.lowStockCount + 'টি';
+
+  // Low stock alert
+  const alertEl = document.getElementById('low-stock-alert');
+  if (data.lowStockItems && data.lowStockItems.length > 0) {
+    const names = data.lowStockItems.slice(0,3).map(i => `<strong>${i.name}</strong> (${i.stock})`).join(', ');
+    alertEl.style.display = 'flex';
+    alertEl.className = 'alert alert-warn';
+    alertEl.innerHTML = `<i class="ti ti-alert-triangle"></i> কম স্টক: ${names} ${data.lowStockItems.length > 3 ? `এবং আরও ${data.lowStockItems.length-3}টি` : ''}`;
+  }
+
+  // Recent sales
+  const tbody = document.getElementById('dash-recent');
+  if (data.recentSales && data.recentSales.length > 0) {
+    tbody.innerHTML = data.recentSales.map(s => `
+      <tr>
+        <td><strong>${s.customer_name}</strong></td>
+        <td>${s.product_name}</td>
+        <td><strong>${tk(s.total)}</strong></td>
+        <td>${statusPill(s.status)}</td>
+        <td style="color:#999;font-size:12px">${fmtTime(s.sale_date)}</td>
+      </tr>`).join('');
+  } else {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty"><i class="ti ti-receipt-off"></i>কোনো বিক্রয় নেই</td></tr>';
+  }
+
+  // Weekly sales chart
+  const wLabels = data.weeklySales.map(d => d.date);
+  const wData = data.weeklySales.map(d => d.total);
+  if (weekChartInst) weekChartInst.destroy();
+  weekChartInst = new Chart(document.getElementById('weekChart'), {
+    type: 'bar',
+    data: { labels: wLabels, datasets: [{ label: 'বিক্রয়', data: wData, backgroundColor: '#2d7a52', borderRadius: 5 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { ticks: { callback: v => '৳' + (v/1000).toFixed(0) + 'হা' } } }
+    }
+  });
+
+  // Expense pie chart
+  const eLabels = Object.keys(data.expCategories);
+  const eData = Object.values(data.expCategories);
+  if (expChartInst) expChartInst.destroy();
+  expChartInst = new Chart(document.getElementById('expChart'), {
+    type: 'doughnut',
+    data: {
+      labels: eLabels,
+      datasets: [{ data: eData, backgroundColor: ['#1a4731','#2d7a52','#5dcaa5','#9fe1cb','#faeeda'], borderWidth: 0 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, boxWidth: 10 } } }
+    }
+  });
+}
+
+// ============================================================
+// SALES
+// ============================================================
+async function loadSales() {
+  let [sales, monthly] = await Promise.all([
+    apiFetch('/sales'),
+    apiFetch('/sales/monthly')
+  ]);
+  if (!sales) sales = DEMO.sales;
+  if (!monthly) monthly = DEMO.monthly;
+
+  const tbody = document.getElementById('sales-table');
+  if (sales.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty"><i class="ti ti-receipt-off"></i>কোনো বিক্রয় নেই। নতুন বিক্রয় যোগ করুন।</td></tr>';
+    return;
+  }
+  tbody.innerHTML = sales.map((s,i) => `
+    <tr>
+      <td style="color:#999;font-size:12px">${i+1001}</td>
+      <td><strong>${s.customer_name}</strong></td>
+      <td>${s.product_name||'—'}</td>
+      <td>${s.quantity}</td>
+      <td><strong>${tk(s.total)}</strong></td>
+      <td>${s.payment_method}</td>
+      <td style="font-size:12px;color:#777">${fmtDate(s.sale_date)}</td>
+      <td>${statusPill(s.status)}</td>
+    </tr>`).join('');
+
+  // Monthly trend chart
+  if (trendChartInst) trendChartInst.destroy();
+  trendChartInst = new Chart(document.getElementById('salesTrendChart'), {
+    type: 'line',
+    data: {
+      labels: monthly.map(m => m.month),
+      datasets: [{
+        label: 'বিক্রয়',
+        data: monthly.map(m => m.total),
+        borderColor: '#1a4731',
+        backgroundColor: 'rgba(26,71,49,0.07)',
+        fill: true, tension: 0.3,
+        pointRadius: 4, pointBackgroundColor: '#1a4731'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { ticks: { callback: v => '৳' + (v/1000) + 'হা' } } }
+    }
+  });
+
+  // Fill product dropdown in sale modal
+  await loadInventoryForSale();
+}
+
+async function loadInventoryForSale() {
+  let inv = await apiFetch('/inventory');
+  if (!inv) inv = DEMO.inventory;
+  inventoryCache = inv;
+  const sel = document.getElementById('s-prod');
+  sel.innerHTML = '<option value="">পণ্য বেছে নিন</option>' +
+    inv.map(p => `<option value="${p.id}" data-price="${p.sell_price}">${p.name} (স্টক: ${p.stock})</option>`).join('');
+}
+
+function fillSalePrice() {
+  const sel = document.getElementById('s-prod');
+  const opt = sel.options[sel.selectedIndex];
+  if (opt && opt.dataset.price) {
+    document.getElementById('s-price').value = opt.dataset.price;
+    calcSaleTotal();
+  }
+}
+
+function calcSaleTotal() {
+  const qty = parseFloat(document.getElementById('s-qty').value) || 0;
+  const price = parseFloat(document.getElementById('s-price').value) || 0;
+  document.getElementById('s-total').value = (qty * price).toFixed(0);
+}
+
+async function addSale() {
+  const body = {
+    customer_name: document.getElementById('s-cust').value.trim(),
+    product_id: document.getElementById('s-prod').value || null,
+    product_name: document.getElementById('s-prod').options[document.getElementById('s-prod').selectedIndex].text.split('(')[0].trim(),
+    quantity: parseInt(document.getElementById('s-qty').value),
+    unit_price: parseFloat(document.getElementById('s-price').value),
+    payment_method: document.getElementById('s-pay').value,
+    status: document.getElementById('s-status').value
+  };
+  if (!body.customer_name || !body.unit_price) return alert('নাম এবং মূল্য আবশ্যক');
+  const res = await apiFetch('/sales', { method:'POST', body: JSON.stringify(body) });
+  closeModal('sale-modal');
+  loadSales();
+  loadDashboard();
+}
+
+// ============================================================
+// INVENTORY
+// ============================================================
+async function loadInventory() {
+  let inv = await apiFetch('/inventory');
+  if (!inv) inv = DEMO.inventory;
+  inventoryCache = inv;
+
+  const lowItems = inv.filter(i => i.stock <= i.low_stock_threshold);
+  const alertEl = document.getElementById('inv-alert');
+  if (lowItems.length > 0) {
+    alertEl.style.display = 'flex';
+    alertEl.className = 'alert alert-warn';
+    alertEl.innerHTML = `<i class="ti ti-alert-triangle"></i> ${lowItems.length}টি পণ্যের স্টক কম। পুনরায় অর্ডার করুন।`;
+  }
+
+  const tbody = document.getElementById('inventory-table');
+  if (inv.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" class="empty"><i class="ti ti-box-off"></i>কোনো পণ্য নেই।</td></tr>';
+    return;
+  }
+  tbody.innerHTML = inv.map(p => {
+    const isLow = p.stock <= p.low_stock_threshold;
+    const profit = p.buy_price > 0 ? (((p.sell_price - p.buy_price) / p.buy_price) * 100).toFixed(0) : '—';
+    return `<tr>
+      <td style="font-size:12px;color:#999">${p.product_code||'—'}</td>
+      <td><strong>${p.name}</strong></td>
+      <td>${p.category||'—'}</td>
+      <td style="color:${isLow?'var(--red-text)':'var(--green-text)'};font-weight:600">${p.stock}</td>
+      <td>${tk(p.buy_price)}</td>
+      <td>${tk(p.sell_price)}</td>
+      <td>${profit}%</td>
+      <td>${statusPill(isLow?'কম স্টক':'স্বাভাবিক')}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteInventory('${p.id}')"><i class="ti ti-trash"></i></button></td>
+    </tr>`;
+  }).join('');
+}
+
+async function addInventory() {
+  const body = {
+    name: document.getElementById('i-name').value.trim(),
+    category: document.getElementById('i-cat').value,
+    stock: document.getElementById('i-stock').value,
+    buy_price: document.getElementById('i-buy').value,
+    sell_price: document.getElementById('i-sell').value,
+    low_stock_threshold: document.getElementById('i-threshold').value
+  };
+  if (!body.name || !body.stock) return alert('নাম এবং স্টক আবশ্যক');
+  await apiFetch('/inventory', { method:'POST', body: JSON.stringify(body) });
+  closeModal('inv-modal');
+  loadInventory();
+}
+
+async function deleteInventory(id) {
+  if (!confirm('এই পণ্যটি মুছে ফেলবেন?')) return;
+  await apiFetch('/inventory/' + id, { method:'DELETE' });
+  loadInventory();
+}
+
+// ============================================================
+// CUSTOMERS
+// ============================================================
+async function loadCustomers() {
+  let custs = await apiFetch('/customers');
+  if (!custs) custs = DEMO.customers;
+
+  const tbody = document.getElementById('cust-table');
+  if (custs.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty"><i class="ti ti-users-off"></i>কোনো খদ্দের নেই।</td></tr>';
+    return;
+  }
+  tbody.innerHTML = custs.map(c => `
+    <tr>
+      <td><strong>${c.name}</strong></td>
+      <td style="font-size:12px">${c.phone||'—'}</td>
+      <td style="font-size:12px">${c.area||'—'}</td>
+      <td><strong>${tk(c.total_purchase||0)}</strong></td>
+      <td style="color:${c.total_due>0?'var(--red-text)':'var(--green-text)'};font-weight:600">${tk(c.total_due||0)}</td>
+      <td style="font-size:12px;color:#999">${fmtDate(c.created_at)}</td>
+      <td>${c.total_due>0?`<button class="btn btn-sm" onclick="clearDue('${c.id}')">বাকি মেটাও</button>`:'—'}</td>
+    </tr>`).join('');
+
+  // Top customers
+  const top = [...custs].sort((a,b) => b.total_purchase - a.total_purchase).slice(0,4);
+  const maxPurchase = top[0]?.total_purchase || 1;
+  document.getElementById('top-customers').innerHTML = top.map(c => `
+    <div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;font-size:13px">
+        <span><strong>${c.name}</strong></span>
+        <span style="font-weight:600">${tk(c.total_purchase||0)}</span>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-bar" style="width:${Math.round((c.total_purchase/maxPurchase)*100)}%"></div>
+      </div>
+    </div>`).join('');
+}
+
+async function addCustomer() {
+  const body = {
+    name: document.getElementById('c-name').value.trim(),
+    phone: document.getElementById('c-phone').value,
+    area: document.getElementById('c-area').value,
+    address: document.getElementById('c-addr').value
+  };
+  if (!body.name) return alert('নাম আবশ্যক');
+  await apiFetch('/customers', { method:'POST', body: JSON.stringify(body) });
+  closeModal('cust-modal');
+  loadCustomers();
+}
+
+async function clearDue(id) {
+  await apiFetch('/customers/' + id + '/clear-due', { method:'PUT' });
+  loadCustomers();
+}
+
+// ============================================================
+// EXPENSES
+// ============================================================
+async function loadExpenses() {
+  let exps = await apiFetch('/expenses');
+  if (!exps) exps = DEMO.expenses;
+
+  const total = exps.reduce((s,e) => s + Number(e.amount), 0);
+  document.getElementById('exp-total').textContent = tk(total);
+
+  const cats = {};
+  exps.forEach(e => cats[e.category] = (cats[e.category]||0) + Number(e.amount));
+  document.getElementById('exp-cat1').textContent = tk(cats['পণ্য কেনা']||0);
+  document.getElementById('exp-cat2').textContent = tk((cats['ভাড়া']||0)+(cats['বিদ্যুৎ']||0)+(cats['পানি']||0));
+  document.getElementById('exp-cat3').textContent = tk((cats['পরিবহন']||0)+(cats['বেতন']||0)+(cats['অন্যান্য']||0));
+
+  const tbody = document.getElementById('exp-table');
+  if (exps.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty"><i class="ti ti-coin-off"></i>কোনো খরচ নেই।</td></tr>';
+    return;
+  }
+  tbody.innerHTML = exps.map(e => `
+    <tr>
+      <td style="font-size:12px;color:#777">${fmtDate(e.expense_date)}</td>
+      <td><span class="pill pill-blue">${e.category}</span></td>
+      <td>${e.description||'—'}</td>
+      <td><strong>${tk(e.amount)}</strong></td>
+      <td style="font-size:12px">${e.payment_method}</td>
+    </tr>`).join('');
+}
+
+async function addExpense() {
+  const body = {
+    category: document.getElementById('e-cat').value,
+    description: document.getElementById('e-desc').value,
+    amount: document.getElementById('e-amt').value,
+    payment_method: document.getElementById('e-pay').value
+  };
+  if (!body.amount) return alert('পরিমাণ আবশ্যক');
+  await apiFetch('/expenses', { method:'POST', body: JSON.stringify(body) });
+  closeModal('exp-modal');
+  loadExpenses();
+  loadDashboard();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+loadDashboard();
+</script>
+</body>
+</html>
